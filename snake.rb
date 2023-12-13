@@ -7,9 +7,9 @@ class Snake
         @head = Head.new(40, 15)
         @tail = Tail.new(
             [
-                TailSegment.new(39, 15),
-                TailSegment.new(38, 15),
-                TailSegment.new(37, 15),
+                TailSegment.new(39, 15), # 40, 15
+                TailSegment.new(38, 15), # 39, 15
+                TailSegment.new(37, 15), # 38, 15
             ]
         )
     end
@@ -26,7 +26,13 @@ class Snake
         @direction = new_direction
     end    
 
-    def move
+    def move(eaten)
+        if ! eaten
+            @tail.segments.pop()
+        end
+
+        @tail.segments.unshift(TailSegment.new(@head.x, @head.y))
+
         if @direction == "right"
             @head.x = @head.x + 1
         end  
@@ -40,6 +46,11 @@ class Snake
             @head.y = @head.y + 1
         end
     end
+    
+    def move_segments
+        @direction == "right"
+        @segments.x = @segments.x + 1
+    end   
 end
 
 class Head < Struct.new(:x, :y)
@@ -67,7 +78,7 @@ class TailSegment < Struct.new(:x, :y)
     def char
         "o"
     end
-end  
+end
 
 class Apple < Struct.new(:x, :y)
     def char
@@ -122,9 +133,9 @@ class SnakeGame
     end
 
     def tick
-        move_snake
+        eaten = apple_eat?
+        @snake.move(eaten)
         handle_wall_hit
-        apple_eat?
     end
 
     def handle_wall_hit
@@ -143,18 +154,18 @@ class SnakeGame
     end
 
     def apple_eat?
-        if @snake.head.x == @apple.x and @snake.head.y == @apple.y
+        eaten = @snake.head.x == @apple.x && @snake.head.y == @apple.y
 
+        if eaten 
             @apple = Apple.new(rand(@width), rand(@height))
             
             @score = @score + 1
         end
+
+        return eaten 
     end
 
 
-    def move_snake
-        @snake.move()
-    end
 
     def wait?
         false
